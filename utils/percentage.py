@@ -39,7 +39,7 @@ def calc_percentage():
 
     print("1. Percentage")
     print("2. Profit and loss")
-    print("3. Simple interest       (MORE WILL BE ADDED SOON)")
+    print("3. Simple interest")
     
     while True:
         try:
@@ -247,49 +247,128 @@ def calc_percentage():
                 pass
 
     elif mode_select == 3:
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("------------------------------------")
-        print("-------------CALCULATOR-------------")
-        print("------------------------------------")
-
-        principal = read_float("Enter principal amount: ")
-        rate = read_float("Enter rate: ")
-        time_sim_int = read_float("Enter time (In years): ")
-
-        simple_interest = principal * rate * time_sim_int / 100
-        if not math.isfinite(simple_interest):
-            print("Math Error: simple interest is outside the supported numeric range.")
-            return
-
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("------------------------------------")
-        print("-------------CALCULATOR-------------")
-        print("------------------------------------")
-        print("What do you want to show?")
-        print("1. Total amount")
-        print("2. Simple Interest")
-        print("3. Both")
-        while True:
-            try:
-                total_or_si = int(input("Select: "))
-                if total_or_si in (1, 2, 3):
-                    break
-                else:
-                    print("Invalid mode!")
-            except ValueError:
+        def read_choice(prompt, choices):
+            while True:
+                try:
+                    choice = int(input(prompt))
+                    if choice in choices:
+                        return choice
+                except ValueError:
+                    pass
                 print("Invalid!")
-        if total_or_si == 1:
-            print(f"Answer: {principal + simple_interest:.10g}")
-        elif total_or_si == 2:
-            print(f"Answer: {simple_interest:.10g}")
-        elif total_or_si == 3:
-            print(f"Simple Interest: {simple_interest:.10g}")
-            print(f"Total Amount: {principal + simple_interest:.10g}")
-        else:
-            pass
 
-    else:
-        pass
+        def divide(numerator, denominator):
+            if not math.isfinite(numerator) or not math.isfinite(denominator):
+                print("Math Error: result is outside the supported numeric range.")
+                return None
+            if denominator == 0:
+                print("Math Error: cannot calculate because the divisor is zero.")
+                return None
+            result = numerator / denominator
+            if not math.isfinite(result):
+                print("Math Error: result is outside the supported numeric range.")
+                return None
+            return result
+
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("------------------------------------")
+        print("-------------CALCULATOR-------------")
+        print("------------------------------------")
+        print("What do you want to calculate?")
+        print("1. Simple interest or total amount")
+        print("2. Principal, time, or rate")
+        selection_si = read_choice("Select: ", (1, 2))
+
+        if selection_si == 1:
+            os.system("cls" if os.name == "nt" else "clear")
+            print("------------------------------------")
+            print("-------------CALCULATOR-------------")
+            print("------------------------------------")
+            principal = read_float("Enter principal amount: ")
+            rate = read_float("Enter rate per annum: ")
+            time_sim_int = read_float("Enter time (in years): ")
+
+            simple_interest = principal * rate * time_sim_int / 100
+            if not math.isfinite(simple_interest):
+                print("Math Error: simple interest is outside the supported numeric range.")
+                return
+
+            print("What do you want to show?")
+            print("1. Total amount")
+            print("2. Simple interest")
+            print("3. Both")
+            total_or_si = read_choice("Select: ", (1, 2, 3))
+
+            if total_or_si in (1, 3):
+                total_amount = principal + simple_interest
+                if not math.isfinite(total_amount):
+                    print("Math Error: total amount is outside the supported numeric range.")
+                    return
+            if total_or_si == 1:
+                print(f"Answer: {total_amount:.10g}")
+            elif total_or_si == 2:
+                print(f"Answer: {simple_interest:.10g}")
+            else:
+                print(f"Simple interest: {simple_interest:.10g}")
+                print(f"Total amount: {total_amount:.10g}")
+
+        else:
+            os.system("cls" if os.name == "nt" else "clear")
+            print("------------------------------------")
+            print("-------------CALCULATOR-------------")
+            print("------------------------------------")
+            print("What do you want to calculate?")
+            print("1. Principal amount")
+            print("2. Time")
+            print("3. Rate per annum")
+            unknown = read_choice("Select: ", (1, 2, 3))
+
+            print("What information do you have?")
+            print("1. Simple interest")
+            print("2. Total amount")
+            known_value = read_choice("Select: ", (1, 2))
+
+            if known_value == 1:
+                simple_interest = read_float("Enter simple interest: ")
+            else:
+                total_amount = read_float("Enter total amount: ")
+
+            if unknown == 1:
+                if known_value == 1:
+                    rate = read_float("Enter rate per annum: ")
+                    time_sim_int = read_float("Enter time (in years): ")
+                    principal = divide(
+                        simple_interest * 100, rate * time_sim_int
+                    )
+                else:
+                    rate = read_float("Enter rate per annum: ")
+                    time_sim_int = read_float("Enter time (in years): ")
+                    growth_factor = 1 + rate * time_sim_int / 100
+                    principal = divide(total_amount, growth_factor)
+                if principal is not None:
+                    print(f"Principal: {principal:.10g}")
+
+            elif unknown == 2:
+                principal = read_float("Enter principal amount: ")
+                rate = read_float("Enter rate per annum: ")
+                if known_value == 1:
+                    numerator = simple_interest * 100
+                else:
+                    numerator = (total_amount - principal) * 100
+                time_sim_int = divide(numerator, principal * rate)
+                if time_sim_int is not None:
+                    print(f"Time: {time_sim_int:.10g} years")
+
+            else:
+                principal = read_float("Enter principal amount: ")
+                time_sim_int = read_float("Enter time (in years): ")
+                if known_value == 1:
+                    numerator = simple_interest * 100
+                else:
+                    numerator = (total_amount - principal) * 100
+                rate = divide(numerator, principal * time_sim_int)
+                if rate is not None:
+                    print(f"Rate per annum: {rate:.10g}%")
 
 if __name__ == "__main__":
     calc_percentage()
